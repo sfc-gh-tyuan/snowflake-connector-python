@@ -794,8 +794,18 @@ class SnowflakeCursor:
                 sf_file_transfer_agent.execute()
                 data = sf_file_transfer_agent.result()
                 self._total_rowcount = len(data["rowset"]) if "rowset" in data else -1
-                if sf_file_transfer_agent._command_type == "UPLOAD": 
-                    self._execute_helper("put done;")
+                if sf_file_transfer_agent._command_type == "UPLOAD":
+                    if '$$' in ret['data']['uploadInfo']['location']:
+                        self._execute_helper('put done;')
+                    else:
+                        res = command.split('@')
+                        stageName, prefix = res[1].split('/')
+                        if ';' in prefix:
+                            prefix = prefix.replace(';', '')
+                        # fileName = sf_file_transfer_agent._file_metadata[0].dst_file_name
+                        # if prefix is not '':
+                        #    fileName = prefix + '/' + fileName
+                        self._execute_helper("alter stage {} refresh subpath = '{}'".format(stageName, prefix));
 
             if _exec_async:
                 self.connection._async_sfqids[self._sfqid] = None
