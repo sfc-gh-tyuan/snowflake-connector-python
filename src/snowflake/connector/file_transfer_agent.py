@@ -596,6 +596,8 @@ class SnowflakeFileTransferAgent:
         for file_client in files:
             callback = partial(preprocess_done_cb, done_client=file_client)
             if is_upload:
+                if 'test.json' in file_client.data_file:
+                    raise Error('custom exception: transactional test')
                 preprocess_tpe.submit(
                     function_and_callback_wrapper,
                     # Work fn
